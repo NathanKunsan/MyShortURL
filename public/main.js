@@ -84,8 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
     document.getElementById('lang-th').addEventListener('click', () => setLanguage('th'));
 
-    // Initialize language on load
-    setLanguage(currentLang);
 
     const form = document.getElementById('shorten-form');
     const urlInput = document.getElementById('url-input');
@@ -143,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Load local recent links on start
-    loadLocalHistory();
+    // Initialize language on load (this also loads local history)
+    setLanguage(currentLang);
 
     // Validation Debounce logic
     let validationTimeout;
