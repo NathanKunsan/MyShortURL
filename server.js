@@ -65,6 +65,17 @@ async function validateUrlDestination(url) {
   }
 }
 
+// Helper to generate Base62 random string
+function generateBase62(length = 5) {
+  const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const randomBytes = crypto.randomBytes(length);
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars[randomBytes[i] % chars.length];
+  }
+  return result;
+}
+
 // API: Validate URL Destination
 app.post('/api/validate', async (req, res) => {
   let { url } = req.body;
@@ -117,8 +128,20 @@ app.post('/api/shorten', async (req, res) => {
     }
     shortId = customCode;
   } else {
-    // Generate random 5-character string
-    shortId = crypto.randomBytes(3).toString('hex').slice(0, 5);
+    // Generate random 5-character Base62 string with retry logic
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 5) {
+      shortId = generateBase62(5);
+      const existing = db.prepare('SELECT id FROM links WHERE id = ?').get(shortId);
+      if (!existing) {
+        isUnique = true;
+      }
+      attempts++;
+    }
+    if (!isUnique) {
+      return res.status(500).json({ error: 'System busy, failed to generate unique URL. Please try again.' });
+    }
   }
 
   try {
