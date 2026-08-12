@@ -1,4 +1,87 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Internationalization (i18n)
+    const i18n = {
+        en: {
+            header_subtitle: "Shorten your links, expand your reach.",
+            label_url: "Your URL",
+            label_custom: "Back-half (optional)",
+            title_custom_input: "Only English letters and numbers",
+            btn_shorten: "Shorten",
+            label_result: "Your shortened link:",
+            title_copy: "Copy to clipboard",
+            text_copied: "Copied!",
+            label_qr: "QR Code:",
+            recent_title: "Recent Links",
+            title_clear: "Clear History",
+            title_toggle: "Minimize/Expand",
+            title_close: "Close",
+            modal_qr_title: "Scan QR Code",
+            btn_qr_copy: "Copy Image",
+            btn_qr_download: "Download",
+            modal_confirm_title: "Confirm Deletion",
+            modal_confirm_text: "Are you sure you want to delete this?",
+            btn_yes: "Yes",
+            btn_no: "No",
+            alert_validating: "Validating...",
+            alert_valid: "Valid URL",
+            alert_invalid: "Invalid URL format or unreachable",
+            alert_error: "An error occurred while shortening the link"
+        },
+        th: {
+            header_subtitle: "ย่อลิงก์ให้สั้นลง เพื่อการเข้าถึงที่มากกว่า",
+            label_url: "ลิงก์ของคุณ",
+            label_custom: "ชื่อที่ต้องการ (เลือกได้)",
+            title_custom_input: "เฉพาะตัวอักษรภาษาอังกฤษและตัวเลขเท่านั้น",
+            btn_shorten: "ย่อลิงก์",
+            label_result: "ลิงก์ที่ย่อแล้วของคุณ:",
+            title_copy: "คัดลอกไปยังคลิปบอร์ด",
+            text_copied: "คัดลอกแล้ว!",
+            label_qr: "คิวอาร์โค้ด:",
+            recent_title: "ประวัติการย่อลิงก์",
+            title_clear: "ล้างประวัติ",
+            title_toggle: "ย่อ/ขยาย",
+            title_close: "ปิด",
+            modal_qr_title: "สแกนคิวอาร์โค้ด",
+            btn_qr_copy: "คัดลอกรูปภาพ",
+            btn_qr_download: "ดาวน์โหลด",
+            modal_confirm_title: "ยืนยันการลบ",
+            modal_confirm_text: "คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?",
+            btn_yes: "ใช่, ลบเลย",
+            btn_no: "ไม่",
+            alert_validating: "กำลังตรวจสอบ...",
+            alert_valid: "ลิงก์ถูกต้อง",
+            alert_invalid: "รูปแบบลิงก์ไม่ถูกต้องหรือเข้าถึงไม่ได้",
+            alert_error: "เกิดข้อผิดพลาดขณะย่อลิงก์"
+        }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'en';
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('lang', lang);
+        document.documentElement.lang = lang;
+        
+        document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+        document.getElementById('lang-th').classList.toggle('active', lang === 'th');
+        
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (i18n[lang][key]) el.textContent = i18n[lang][key];
+        });
+        
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            const key = el.getAttribute('data-i18n-title');
+            if (i18n[lang][key]) el.title = i18n[lang][key];
+        });
+    }
+
+    document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
+    document.getElementById('lang-th').addEventListener('click', () => setLanguage('th'));
+
+    // Initialize language on load
+    setLanguage(currentLang);
+
     const form = document.getElementById('shorten-form');
     const urlInput = document.getElementById('url-input');
     const customCodeInput = document.getElementById('custom-code-input');
@@ -80,11 +163,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.valid) {
                     validationFeedback.classList.add('valid');
                     validationIcon.innerHTML = validIconSvg;
-                    validationText.textContent = 'Valid url';
+                    validationText.textContent = i18n[currentLang].alert_valid;
                 } else {
                     validationFeedback.classList.add('invalid');
                     validationIcon.innerHTML = invalidIconSvg;
-                    validationText.textContent = 'wrong url';
+                    validationText.textContent = i18n[currentLang].alert_invalid;
                 }
             } catch (error) {
                 console.error('Validation error:', error);
@@ -111,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Shortening...';
+        submitBtn.textContent = currentLang === 'th' ? 'กำลังย่อลิงก์...' : 'Shortening...';
 
         try {
             const payload = { url: processedUrl };
@@ -158,10 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            alert(i18n[currentLang].alert_error);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Shorten';
+            submitBtn.textContent = i18n[currentLang].btn_shorten;
         }
     });
 
@@ -214,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     qrDownloadBtn.addEventListener('click', async () => {
         try {
-            qrDownloadBtn.textContent = 'Downloading...';
+            qrDownloadBtn.textContent = currentLang === 'th' ? 'กำลังโหลด...' : 'Downloading...';
             const response = await fetch(qrCodeLarge.src);
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
@@ -226,9 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Failed to download QR code', error);
-            alert('Failed to download QR code.');
+            alert(currentLang === 'th' ? 'เกิดข้อผิดพลาดในการดาวน์โหลด' : 'Failed to download QR code.');
         } finally {
-            qrDownloadBtn.textContent = 'Download';
+            qrDownloadBtn.textContent = i18n[currentLang].btn_qr_download;
         }
     });
 
@@ -241,12 +324,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 new ClipboardItem({ 'image/png': blob })
             ]);
             playSuccessSound();
-            qrCopyBtn.textContent = 'Copied!';
-            setTimeout(() => qrCopyBtn.textContent = 'Copy Image', 2000);
+            qrCopyBtn.textContent = i18n[currentLang].text_copied;
+            setTimeout(() => qrCopyBtn.textContent = i18n[currentLang].btn_qr_copy, 2000);
         } catch (error) {
             console.error('Failed to copy QR code', error);
-            alert('Failed to copy. Your browser might not support copying images.');
-            qrCopyBtn.textContent = 'Copy Image';
+            alert(currentLang === 'th' ? 'เบราว์เซอร์ของคุณไม่รองรับการคัดลอกรูปภาพ' : 'Failed to copy. Your browser might not support copying images.');
+            qrCopyBtn.textContent = i18n[currentLang].btn_qr_copy;
         }
     });
 
@@ -280,7 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Clear all history
     clearHistoryBtn.addEventListener('click', () => {
-        showConfirmModal('Are you sure you want to clear all your recent links history?', () => {
+        const msg = currentLang === 'th' ? 'คุณแน่ใจหรือไม่ว่าต้องการล้างประวัติลิงก์ทั้งหมด?' : 'Are you sure you want to clear all your recent links history?';
+        showConfirmModal(msg, () => {
             localStorage.removeItem('myShortUrlHistory');
             renderRecentLinks([]);
         });
@@ -303,7 +387,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function deleteFromHistory(index) {
-        showConfirmModal('Are you sure you want to delete this specific link from your history?', () => {
+        const msg = currentLang === 'th' ? 'คุณแน่ใจหรือไม่ว่าต้องการลบลิงก์นี้ออกจากประวัติ?' : 'Are you sure you want to delete this specific link from your history?';
+        showConfirmModal(msg, () => {
             let history = JSON.parse(localStorage.getItem('myShortUrlHistory') || '[]');
             history.splice(index, 1);
             localStorage.setItem('myShortUrlHistory', JSON.stringify(history));
@@ -314,7 +399,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderRecentLinks(links) {
         recentList.innerHTML = '';
         if (links.length === 0) {
-            recentList.innerHTML = '<li><span class="recent-link-original">No recent links yet.</span></li>';
+            const noLinkMsg = currentLang === 'th' ? 'ยังไม่มีประวัติการย่อลิงก์' : 'No recent links yet.';
+            recentList.innerHTML = `<li><span class="recent-link-original">${noLinkMsg}</span></li>`;
             return;
         }
 
@@ -340,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const qrBtn = document.createElement('button');
             qrBtn.className = 'icon-btn';
-            qrBtn.title = 'View QR Code';
+            qrBtn.title = i18n[currentLang].title_copy;
             qrBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg>';
             qrBtn.addEventListener('click', () => {
                 qrCodeLarge.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(link.shortUrl)}`;
