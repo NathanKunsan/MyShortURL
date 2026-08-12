@@ -74,6 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const key = el.getAttribute('data-i18n-title');
             if (i18n[lang][key]) el.title = i18n[lang][key];
         });
+        
+        // Re-render dynamic content to apply language changes
+        if (typeof loadLocalHistory === 'function') {
+            loadLocalHistory();
+        }
     }
 
     document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
