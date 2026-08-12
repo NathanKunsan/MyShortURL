@@ -122,7 +122,7 @@ app.post('/api/shorten', async (req, res) => {
 
   try {
     db.prepare('INSERT INTO links (id, original_url) VALUES (?, ?)').run(shortId, url);
-    res.json({ shortId: shortId, shortUrl: `https://MyShortURL.org/${shortId}` });
+    res.json({ shortId: shortId, shortUrl: `https://my-short-url-seven.vercel.app/${shortId}` });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Database error' });
