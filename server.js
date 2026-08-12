@@ -1,5 +1,4 @@
 const express = require('express');
-const sqlite = require('better-sqlite3');
 const path = require('path');
 const cors = require('cors');
 const crypto = require('crypto');
@@ -7,18 +6,46 @@ const crypto = require('crypto');
 const app = express();
 const PORT = 441;
 
-// On Vercel, the root directory is read-only. We must use /tmp/ for SQLite, 
-// though note that data in /tmp/ is temporary and will reset on cold starts.
-const dbPath = process.env.VERCEL ? '/tmp/links.db' : path.join(__dirname, 'links.db');
+let db;
 
-const db = sqlite(dbPath);
-db.exec(`
-  CREATE TABLE IF NOT EXISTS links (
-    id TEXT PRIMARY KEY,
-    original_url TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+if (process.env.VERCEL) {
+  // Vercel Serverless Function Fallback (In-Memory DB)
+  // better-sqlite3 crashes on Vercel due to native C++ bindings.
+  const memoryDb = new Map();
+  db = {
+    prepare: (query) => {
+      return {
+        get: (...args) => {
+          if (query.includes('SELECT original_url')) {
+            const data = memoryDb.get(args[0]);
+            return data ? { original_url: data } : undefined;
+          }
+          if (query.includes('SELECT id')) {
+            return memoryDb.has(args[0]) ? { id: args[0] } : undefined;
+          }
+          return undefined;
+        },
+        run: (...args) => {
+          if (query.includes('INSERT')) {
+            memoryDb.set(args[0], args[1]);
+          }
+        }
+      };
+    },
+    exec: () => {} // Do nothing
+  };
+} else {
+  // Local Development (SQLite)
+  const sqlite = require('better-sqlite3');
+  db = sqlite(path.join(__dirname, 'links.db'));
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS links (
+      id TEXT PRIMARY KEY,
+      original_url TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+}
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
