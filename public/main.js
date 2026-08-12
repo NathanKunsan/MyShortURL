@@ -129,9 +129,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 // Show result
-                const fullShortUrl = 'https://my-short-url-seven.vercel.app/' + data.shortId;
-                shortLink.href = '/' + data.shortId;
-                shortLink.textContent = fullShortUrl;
+                const fullShortUrl = data.shortUrl;
+                const displayUrl = fullShortUrl.replace(/^https?:\/\//, '');
+                
+                shortLink.href = fullShortUrl;
+                shortLink.textContent = displayUrl;
                 
                 // Show QR code
                 qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(fullShortUrl)}`;
@@ -164,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     copyBtn.addEventListener('click', () => {
-        const urlToCopy = shortLink.textContent;
+        const urlToCopy = shortLink.href;
         navigator.clipboard.writeText(urlToCopy).then(() => {
             playSuccessSound();
             copyFeedback.classList.remove('hidden');
@@ -323,10 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
             infoDiv.className = 'recent-list-info';
             
             const shortA = document.createElement('a');
-            shortA.href = '/' + link.shortId;
-            shortA.textContent = link.shortUrl;
-            shortA.className = 'recent-link-short';
+            shortA.href = link.shortUrl;
             shortA.target = '_blank';
+            shortA.className = 'recent-link-short';
+            shortA.textContent = link.shortUrl.replace(/^https?:\/\//, '');
 
             const origSpan = document.createElement('span');
             origSpan.textContent = link.originalUrl;
