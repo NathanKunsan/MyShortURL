@@ -1,13 +1,17 @@
 const express = require('express');
 const sqlite = require('better-sqlite3');
-const crypto = require('crypto');
 const path = require('path');
+const cors = require('cors');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = 441;
 
-// Setup Database
-const db = sqlite('links.db');
+// On Vercel, the root directory is read-only. We must use /tmp/ for SQLite, 
+// though note that data in /tmp/ is temporary and will reset on cold starts.
+const dbPath = process.env.VERCEL ? '/tmp/links.db' : path.join(__dirname, 'links.db');
+
+const db = sqlite(dbPath);
 db.exec(`
   CREATE TABLE IF NOT EXISTS links (
     id TEXT PRIMARY KEY,
@@ -117,6 +121,10 @@ app.get('/:id', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
