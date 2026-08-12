@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = 441;
 
 let db;
@@ -122,7 +123,8 @@ app.post('/api/shorten', async (req, res) => {
 
   try {
     db.prepare('INSERT INTO links (id, original_url) VALUES (?, ?)').run(shortId, url);
-    res.json({ shortId: shortId, shortUrl: `https://my-short-url-seven.vercel.app/${shortId}` });
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    res.json({ shortId: shortId, shortUrl: `${baseUrl}/${shortId}` });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Database error' });
