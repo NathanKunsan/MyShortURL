@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 // Show result
-                const fullShortUrl = 'https://MyShortURL.org/' + data.shortId;
+                const fullShortUrl = 'https://my-short-url-seven.vercel.app/' + data.shortId;
                 shortLink.href = '/' + data.shortId;
                 shortLink.textContent = fullShortUrl;
                 
